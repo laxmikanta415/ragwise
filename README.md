@@ -16,7 +16,7 @@ No Docker. No background server. No framework lock-in. Just Python.
 
 ![ragwise demo](assets/demo-screenshot-1.png)
 
-<video src="https://github.com/user-attachments/assets/677181eb-3c56-44e4-81b8-1ee0bcc23bb2" controls width="100%"></video>
+<video src="https://github.com/user-attachments/assets/96cd2ae9-e591-4c24-b3bf-8beb505446cc" controls width="100%"></video>
 
 ## Install
 
@@ -112,8 +112,6 @@ RAG(store="lance://./ragwise-index")
 # Production — PostgreSQL + pgvector, native hybrid search
 RAG(store="postgresql://user:pass@localhost/mydb")
 ```
-
-![Store upgrade path — same API, one string change](assets/demo-screenshot-6.png)
 
 ## Upgrade Path
 

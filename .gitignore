@@ -18,3 +18,4 @@ ragx-index/
 ragx_config.py
 demo/penv/
 demo/.venv/
+.DS_Store

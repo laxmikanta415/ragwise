@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import contextlib
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from ragwise.config import Answer, IngestResult, QueryConfig, RAGConfig
 from ragwise.eval.chunks import ChunkEvalSchema
@@ -182,7 +182,7 @@ class RAG:
         _progress_bar: Any = None
         if show_progress:
             with contextlib.suppress(ImportError):
-                from tqdm import tqdm  # type: ignore[import]
+                from tqdm import tqdm
                 _progress_bar = tqdm(total=total_files, desc="Indexing", unit="file")
 
         succeeded = 0

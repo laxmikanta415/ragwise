@@ -126,6 +126,13 @@ class PgVectorStore(VectorStore):
         async with conn, conn.cursor() as cur:
             await cur.execute(f"DELETE FROM {self._table} WHERE source = %s", (source,))
 
+    async def list_sources(self) -> list[str]:
+        conn = await self._connect()
+        async with conn, conn.cursor() as cur:
+            await cur.execute(f"SELECT DISTINCT source FROM {self._table} ORDER BY source")
+            rows = await cur.fetchall()
+        return [r[0] for r in rows]
+
     async def get_indexed_sources(self) -> dict[str, str]:
         conn = await self._connect()
         async with conn, conn.cursor() as cur:

@@ -36,6 +36,7 @@ def test_concrete_subclass_can_instantiate() -> None:
         async def sparse_search(self, query: str, top_k: int) -> list[SearchResult]: return []
         async def delete(self, source: str) -> None: ...
         async def get_indexed_sources(self) -> dict[str, str]: return {}
+        async def list_sources(self) -> list[str]: return []
 
     store = ConcreteStore()
     assert isinstance(store, VectorStore)

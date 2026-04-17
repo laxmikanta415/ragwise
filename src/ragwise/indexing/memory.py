@@ -56,6 +56,7 @@ class InMemoryStore(VectorStore):
                 source=self._docs[i].source,
                 score=float(scores[i]),
                 metadata=self._docs[i].metadata,
+                embedding=list(self._docs[i].embedding),
             )
             for i in top_indices
         ]
@@ -89,3 +90,12 @@ class InMemoryStore(VectorStore):
             if doc.source not in seen:
                 seen[doc.source] = doc.metadata.get("content_hash", "")
         return seen
+
+    async def list_sources(self) -> list[str]:
+        seen: set[str] = set()
+        result: list[str] = []
+        for doc in self._docs:
+            if doc.source not in seen:
+                seen.add(doc.source)
+                result.append(doc.source)
+        return result

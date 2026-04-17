@@ -28,6 +28,7 @@ classifiers = [
 dependencies = [
   "anyio>=4.0",
   "numpy>=1.26",
+  "pydantic>=2.0",
   "rank-bm25>=0.2.2",
   "tiktoken>=0.7",
   "openai>=1.30",
@@ -44,7 +45,10 @@ postgres  = ["psycopg[async]>=3.1", "pgvector>=0.3"]
 lance     = ["lancedb>=0.8"]
 local-emb = ["sentence-transformers>=3.0"]
 eval      = ["ragas>=0.2", "langfuse>=2.0", "deepeval>=1.0"]
-serve     = ["starlette>=0.37", "uvicorn>=0.29"]
+serve     = ["starlette>=0.37", "uvicorn>=0.29", "fastapi>=0.100"]
+testing   = ["pytest>=8.0", "pyyaml>=6.0"]
+cache     = ["redis>=5.0"]
+rerank    = ["cohere>=5.0", "flashrank>=0.2"]
 docs = [
   "mkdocs>=1.6",
   "mkdocs-material>=9.5",

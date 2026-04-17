@@ -4,7 +4,7 @@ from __future__ import annotations
 import contextlib
 from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from ragwise.config import Answer, IngestResult, QueryConfig, RAGConfig
 from ragwise.eval.chunks import ChunkEvalSchema
@@ -161,6 +161,9 @@ class RAG:
         glob: str = "**/*",
         force: bool = False,
         tenant_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        on_progress: Callable[[str, int, int], None] | None = None,
+        show_progress: bool = False,
     ) -> IngestResult:
         assert self._store is not None, "RAG must be used as a context manager"
         assert self._embedder is not None
@@ -169,37 +172,49 @@ class RAG:
         loader = AutoLoader()
         p = Path(path)
 
-        # Gather indexed sources for incremental check
         indexed: dict[str, str] = {}
         if not force:
             indexed = await self._store.get_indexed_sources()
 
         files = [p] if p.is_file() else [f for f in p.glob(glob) if f.is_file()]
+        total_files = len(files)
+
+        _progress_bar: Any = None
+        if show_progress:
+            with contextlib.suppress(ImportError):
+                from tqdm import tqdm  # type: ignore[import]
+                _progress_bar = tqdm(total=total_files, desc="Indexing", unit="file")
 
         succeeded = 0
         failed = 0
         errors: list[str] = []
+        failed_files: list[str] = []
         cfg = self._config
 
-        for file_path in files:
+        for files_done, file_path in enumerate(files, start=1):
             try:
                 current_hash = hash_source(file_path)
                 if not force and indexed.get(str(file_path)) == current_hash:
-                    continue  # unchanged — skip
+                    if on_progress:
+                        on_progress(str(file_path), files_done, total_files)
+                    if _progress_bar is not None:
+                        _progress_bar.update(1)
+                    continue
 
-                # Load
                 docs: list[Document] = loader.load(file_path)
 
-                # Chunk
                 chunks: list[Document] = []
                 for doc in docs:
                     chunks.extend(self._chunker.chunk(doc))
 
                 if not chunks:
                     succeeded += 1
+                    if on_progress:
+                        on_progress(str(file_path), files_done, total_files)
+                    if _progress_bar is not None:
+                        _progress_bar.update(1)
                     continue
 
-                # Embed in batches
                 texts = [c.text for c in chunks]
                 all_embeddings: list[list[float]] = []
                 for i in range(0, len(texts), cfg.batch_size):
@@ -207,14 +222,22 @@ class RAG:
                     batch_vecs = await self._embedder.embed(batch)
                     all_embeddings.extend(batch_vecs)
 
-                # Upsert — include tenant_id in metadata for query-time filtering
+                # Delete stale chunks before upserting — prevents duplicates on re-ingest
+                await self._store.delete(str(file_path))
+
+                chunk_meta = metadata or {}
                 embedded_docs = [
                     EmbeddedDoc(
                         id=chunk.id,
                         text=chunk.text,
                         source=chunk.source,
                         embedding=vec,
-                        metadata={**chunk.metadata, "content_hash": current_hash, "tenant_id": tenant_id or ""},
+                        metadata={
+                            **chunk.metadata,
+                            **chunk_meta,
+                            "content_hash": current_hash,
+                            "tenant_id": tenant_id or "",
+                        },
                     )
                     for chunk, vec in zip(chunks, all_embeddings, strict=True)
                 ]
@@ -224,8 +247,22 @@ class RAG:
             except Exception as exc:
                 failed += 1
                 errors.append(f"{file_path}: {exc}")
+                failed_files.append(str(file_path))
 
-        return IngestResult(succeeded=succeeded, failed=failed, errors=errors)
+            if on_progress:
+                on_progress(str(file_path), files_done, total_files)
+            if _progress_bar is not None:
+                _progress_bar.update(1)
+
+        if _progress_bar is not None:
+            _progress_bar.close()
+
+        return IngestResult(
+            succeeded=succeeded,
+            failed=failed,
+            errors=errors,
+            failed_files=failed_files,
+        )
 
     async def query(
         self,
@@ -313,6 +350,38 @@ class RAG:
                 yield token
         else:
             yield await self._llm.complete(prompt)
+
+    async def delete(self, source: str) -> None:
+        """Remove all indexed chunks whose source matches *source*.
+
+        Use for GDPR right-to-erasure or removing a specific document::
+
+            await rag.delete("docs/old-policy.md")
+        """
+        assert self._store is not None, "RAG must be used as a context manager"
+        await self._store.delete(source)
+
+    async def list_sources(self) -> list[str]:
+        """Return all distinct source paths currently indexed.
+
+        Useful for building admin UIs or audit reports::
+
+            sources = await rag.list_sources()
+        """
+        assert self._store is not None, "RAG must be used as a context manager"
+        return await self._store.list_sources()
+
+    async def update(self, source: str, path: str | None = None) -> IngestResult:
+        """Re-ingest a source, replacing all its existing chunks.
+
+        If *path* is omitted, *source* is used as the file path::
+
+            await rag.update("docs/policy.md")
+            await rag.update("docs/policy.md", path="/new/location/policy.md")
+        """
+        assert self._store is not None, "RAG must be used as a context manager"
+        await self._store.delete(source)
+        return await self.ingest(path or source, force=True)
 
     async def search(
         self,

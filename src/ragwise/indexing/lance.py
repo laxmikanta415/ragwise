@@ -115,6 +115,20 @@ class LanceDBStore(VectorStore):
             return
         tbl.delete(f"source = '{source}'")
 
+    async def list_sources(self) -> list[str]:
+        tbl = self._get_table()
+        if tbl is None:
+            return []
+        data = tbl.to_arrow().to_pydict()
+        seen: set[str] = set()
+        result: list[str] = []
+        for src in data.get("source", []):
+            s = str(src)
+            if s not in seen:
+                seen.add(s)
+                result.append(s)
+        return result
+
     async def get_indexed_sources(self) -> dict[str, str]:
         tbl = self._get_table()
         if tbl is None:

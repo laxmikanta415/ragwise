@@ -22,6 +22,8 @@ class SearchResult:
     source: str
     score: float
     metadata: dict[str, Any] = field(default_factory=dict)
+    # populated by dense_search when embeddings are available; empty otherwise
+    embedding: list[float] = field(default_factory=list)
 
 
 class VectorStore(ABC):
@@ -46,3 +48,7 @@ class VectorStore(ABC):
     @abstractmethod
     async def get_indexed_sources(self) -> dict[str, str]:
         """Return mapping of source path → content hash for incremental indexing."""
+
+    @abstractmethod
+    async def list_sources(self) -> list[str]:
+        """Return all distinct source paths currently indexed."""

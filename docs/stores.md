@@ -53,7 +53,7 @@ RAG(store="postgresql://user:pass@localhost/mydb")
 - Native hybrid search: `pgvector` for dense, `tsvector`/`ts_rank` for sparse — combined in one SQL query
 - pgvector benchmark: 471 QPS at 50M vectors, 99% recall ([source](https://github.com/pgvector/pgvector#performance))
 - No new infrastructure if your team already runs PostgreSQL
-- Table `ragx_docs` and indexes are created automatically on first use
+- Table `ragwise_docs` and indexes are created automatically on first use
 - Recommended for: production, multi-instance deployments, teams on PostgreSQL
 
 ### Quick setup with Docker (development only)
@@ -64,7 +64,7 @@ docker run -d \
   -p 5432:5432 \
   pgvector/pgvector:pg17
 
-ragx_store = "postgresql://postgres:password@localhost/postgres"
+ragwise_store = "postgresql://postgres:password@localhost/postgres"
 ```
 
 ## Upgrade path

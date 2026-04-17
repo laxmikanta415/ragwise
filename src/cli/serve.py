@@ -1,4 +1,4 @@
-"""ragx serve — minimal Starlette HTTP API (requires pip install ragwise[serve])."""
+"""ragwise serve — minimal Starlette HTTP API (requires pip install ragwise[serve])."""
 from __future__ import annotations
 
 try:
@@ -17,11 +17,11 @@ _rag: RAG | None = None
 
 
 def _load_config() -> RAGConfig:
-    """Load config from ragx_config.py in cwd, or return defaults."""
+    """Load config from ragwise_config.py in cwd, or return defaults."""
     try:
         import importlib
 
-        mod = importlib.import_module("ragx_config")
+        mod = importlib.import_module("ragwise_config")
         config: RAGConfig = mod.config
         return config
     except (ImportError, AttributeError):

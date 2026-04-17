@@ -1,4 +1,4 @@
-"""LangfuseTracer — production tracing for ragx queries."""
+"""LangfuseTracer — production tracing for ragwise queries."""
 from __future__ import annotations
 
 import logging
@@ -20,14 +20,14 @@ def _import_langfuse() -> Any:
 
 
 class LangfuseTracer:
-    """Sends ragx query traces to Langfuse for production observability.
+    """Sends ragwise query traces to Langfuse for production observability.
 
     Example::
 
         tracer = LangfuseTracer(public_key="pk-...", secret_key="sk-...")
         async with RAG(llm="openai/gpt-4o-mini") as rag:
             rag.set_tracer(tracer)
-            answer = await rag.query("What is ragx?")  # trace sent automatically
+            answer = await rag.query("What is ragwise?")  # trace sent automatically
     """
 
     def __init__(
@@ -47,7 +47,7 @@ class LangfuseTracer:
         """Send a trace to Langfuse. Failures are logged and swallowed."""
         try:
             self._client.trace(
-                name="ragx-query",
+                name="ragwise-query",
                 input={"query": query},
                 output={"answer": answer.text, "citations": answer.citations},
                 metadata={

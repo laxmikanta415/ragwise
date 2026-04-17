@@ -1,4 +1,4 @@
-"""End-to-end integration tests for ragx v0.1 — S5-T3."""
+"""End-to-end integration tests for ragwise v0.1 — S5-T3."""
 from __future__ import annotations
 
 import dataclasses
@@ -60,7 +60,7 @@ async def test_basic_ingest_query() -> None:
         assert isinstance(result, IngestResult)
         assert result.succeeded >= 2  # sample.txt + guide.md
 
-        answer = await rag.query("What is ragx?")
+        answer = await rag.query("What is ragwise?")
         assert isinstance(answer, Answer)
         assert answer.text == "This is a test answer based on the provided context."
 

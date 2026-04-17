@@ -1,4 +1,4 @@
-"""Tests for ragx.agent — as_claude_tool() and as_openai_tool()."""
+"""Tests for ragwise.agent — as_claude_tool() and as_openai_tool()."""
 from __future__ import annotations
 
 from ragwise.agent import as_claude_tool, as_openai_tool
@@ -51,7 +51,7 @@ def test_openai_tool_properties() -> None:
     assert "top_k" in props
 
 
-def test_tools_exported_from_ragx() -> None:
+def test_tools_exported_from_ragwise() -> None:
     from ragwise import as_claude_tool as act
     from ragwise import as_openai_tool as aot
 

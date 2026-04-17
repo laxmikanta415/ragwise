@@ -183,12 +183,11 @@ async def test_rag_eval_chunks_method(tmp_path: Path) -> None:
 
 def test_langfuse_tracer_import_error() -> None:
     """LangfuseTracer raises ImportError when langfuse is not installed."""
-    from ragwise.eval.tracer import _import_langfuse
+    import ragwise.eval.tracer as tracer_module
 
     with patch("ragwise.eval.tracer._import_langfuse", side_effect=ImportError("pip install ragwise[eval]")):
         with pytest.raises(ImportError, match="pip install ragwise"):
-            from ragwise.eval.tracer import LangfuseTracer  # noqa: F401
-            _import_langfuse()
+            tracer_module._import_langfuse()
 
 
 @pytest.mark.asyncio

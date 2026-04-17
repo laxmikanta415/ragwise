@@ -25,7 +25,7 @@ class SearchResult:
 
 
 class VectorStore(ABC):
-    """Abstract base class for all ragx vector stores."""
+    """Abstract base class for all ragwise vector stores."""
 
     @abstractmethod
     async def upsert(self, docs: list[EmbeddedDoc]) -> None:

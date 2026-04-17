@@ -1,8 +1,8 @@
-site_name: ragx
+site_name: ragwise
 site_description: "Production RAG in 4 lines — hybrid BM25+dense search by default, no Docker"
-site_url: https://ragx.readthedocs.io
-repo_url: https://github.com/laxmikanta415/ragx
-repo_name: laxmikanta415/ragx
+site_url: https://ragwise.readthedocs.io
+repo_url: https://github.com/laxmikanta415/ragwise
+repo_name: laxmikanta415/ragwise
 edit_uri: edit/main/docs/
 
 theme:

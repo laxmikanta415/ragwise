@@ -25,8 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Agent tools**
 - `rag.search()` — public method returning raw `list[SearchResult]` for use as an agent tool
-- `ragx.agent.as_claude_tool()` — Anthropic-compatible tool schema for Claude agents
-- `ragx.agent.as_openai_tool()` — OpenAI-compatible function tool schema
+- `ragwise.agent.as_claude_tool()` — Anthropic-compatible tool schema for Claude agents
+- `ragwise.agent.as_openai_tool()` — OpenAI-compatible function tool schema
 - `SearchResult` exported from `ragwise` top-level
 
 **Multi-tenant isolation**
@@ -65,8 +65,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `resolve_embedder()` — string shorthand: `"openai/text-embedding-3-small"`, `"local/all-MiniLM-L6-v2"`
 
 **CLI**
-- `ragwise init` — generates `ragx_config.py` with typed defaults and inline comments
+- `ragwise init` — generates `ragwise_config.py` with typed defaults and inline comments
 - `ragwise serve` — Starlette HTTP API on `localhost:8000` with `/health`, `/query`, `/ingest` (`pip install ragwise[serve]`)
 
-[Unreleased]: https://github.com/laxmikanta415/ragx/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/laxmikanta415/ragx/releases/tag/v0.1.0
+[Unreleased]: https://github.com/laxmikanta415/ragwise/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/laxmikanta415/ragwise/releases/tag/v0.1.0

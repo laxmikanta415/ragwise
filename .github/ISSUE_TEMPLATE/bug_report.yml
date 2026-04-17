@@ -9,8 +9,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: ragx version
-      placeholder: "e.g. 0.1.0 — run: pip show ragx"
+      label: ragwise version
+      placeholder: "e.g. 0.1.0 — run: pip show ragwise"
     validations:
       required: true
 
@@ -33,9 +33,9 @@ body:
   - type: dropdown
     id: install
     attributes:
-      label: How did you install ragx?
+      label: How did you install ragwise?
       options:
-        - pip install ragx
+        - pip install ragwise
         - pip install -e . (editable)
         - Other
     validations:
@@ -48,7 +48,7 @@ body:
       description: The smallest snippet of code that reproduces the bug
       render: python
       placeholder: |
-        from ragx import RAG
+        from ragwise import RAG
         async with RAG(llm="openai/gpt-4o-mini") as rag:
             ...
     validations:

@@ -63,7 +63,7 @@ def test_ingest_result_defaults() -> None:
     assert result.errors == []
 
 
-def test_all_four_importable_from_ragx() -> None:
+def test_all_four_importable_from_ragwise() -> None:
     import ragwise
     for name in ("RAGConfig", "QueryConfig", "Answer", "IngestResult"):
         assert name in ragwise.__all__

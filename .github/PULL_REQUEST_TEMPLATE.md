@@ -14,7 +14,7 @@ Closes #
 
 - [ ] `pytest tests/ -x -q` passes locally
 - [ ] `ruff check src/ --fix` — no remaining violations
-- [ ] `mypy src/ragx/` — no errors
+- [ ] `mypy src/ragwise/` — no errors
 - [ ] New or changed behaviour has tests
 - [ ] `CHANGELOG.md` updated under `[Unreleased]`
 - [ ] Docstrings updated for any modified public API

@@ -11,7 +11,7 @@
 **Please do not open a public GitHub issue for security vulnerabilities.**
 
 Email **lax@insummary.com** with:
-- Subject: `[SECURITY] ragx`
+- Subject: `[SECURITY] ragwise`
 - A description of the vulnerability
 - Steps to reproduce
 - Potential impact

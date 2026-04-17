@@ -1,12 +1,12 @@
-# Contributing to ragx
+# Contributing to ragwise
 
 Thank you for your interest in contributing! This guide covers everything you need to get started.
 
 ## Development setup
 
 ```bash
-git clone https://github.com/laxmikanta415/ragx.git
-cd ragx
+git clone https://github.com/laxmikanta415/ragwise.git
+cd ragwise
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 ```
@@ -16,7 +16,7 @@ Verify your setup:
 ```bash
 python -m pytest tests/ -x -q      # all tests pass
 python -m ruff check src/           # no lint errors
-python -m mypy src/ragx/            # no type errors
+python -m mypy src/ragwise/            # no type errors
 ```
 
 ## Branch naming
@@ -44,17 +44,17 @@ docs: add PostgreSQL production guide
 
 - [ ] `pytest tests/ -x -q` passes
 - [ ] `ruff check src/ --fix` — no remaining violations
-- [ ] `mypy src/ragx/` — no errors
+- [ ] `mypy src/ragwise/` — no errors
 - [ ] New behaviour has tests
 - [ ] `CHANGELOG.md` has an entry under `[Unreleased]`
 - [ ] PR description links the related issue
 
 ## Adding a new store backend
 
-1. Subclass `VectorStore` in `src/ragx/indexing/base.py`
+1. Subclass `VectorStore` in `src/ragwise/indexing/base.py`
 2. Implement all five abstract methods: `upsert`, `dense_search`, `sparse_search`, `delete`, `get_indexed_sources`
 3. Guard the optional import with `try/except ImportError`
-4. Add a string shorthand to `_resolve_store()` in `src/ragx/pipeline.py`
+4. Add a string shorthand to `_resolve_store()` in `src/ragwise/pipeline.py`
 5. Add tests in `tests/test_indexing.py`
 6. Document the new store in `docs/stores.md`
 
@@ -68,8 +68,8 @@ pytest tests/ --co -q                     # list collected tests
 
 ## Reporting bugs
 
-Please open an issue using the [bug report template](https://github.com/laxmikanta415/ragx/issues/new?template=bug_report.yml).
+Please open an issue using the [bug report template](https://github.com/laxmikanta415/ragwise/issues/new?template=bug_report.yml).
 
 ## Questions
 
-Open a [GitHub Discussion](https://github.com/laxmikanta415/ragx/discussions) in the Q&A category.
+Open a [GitHub Discussion](https://github.com/laxmikanta415/ragwise/discussions) in the Q&A category.

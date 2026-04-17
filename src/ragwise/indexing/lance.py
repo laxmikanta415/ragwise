@@ -12,7 +12,7 @@ except ImportError as _e:
 
 from ragwise.indexing.base import EmbeddedDoc, SearchResult, VectorStore
 
-_TABLE = "ragx_docs"
+_TABLE = "ragwise_docs"
 
 
 def _row_to_search_result(row: dict[str, Any], score: float) -> SearchResult:
@@ -33,7 +33,7 @@ def _row_to_search_result(row: dict[str, Any], score: float) -> SearchResult:
 class LanceDBStore(VectorStore):
     """Persistent embedded store backed by LanceDB."""
 
-    def __init__(self, uri: str = "./ragx-lance") -> None:
+    def __init__(self, uri: str = "./ragwise-lance") -> None:
         self._uri = str(uri)
         self._db = lancedb.connect(self._uri)
         self._table: Any = None  # lazily opened/created

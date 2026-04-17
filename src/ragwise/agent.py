@@ -1,4 +1,4 @@
-"""Agent tool adapters — make ragx callable from Claude and OpenAI agents."""
+"""Agent tool adapters — make ragwise callable from Claude and OpenAI agents."""
 from __future__ import annotations
 
 from typing import Any

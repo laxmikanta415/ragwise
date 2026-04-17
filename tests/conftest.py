@@ -1,4 +1,4 @@
-"""Shared pytest fixtures for ragx tests."""
+"""Shared pytest fixtures for ragwise tests."""
 from __future__ import annotations
 
 from pathlib import Path

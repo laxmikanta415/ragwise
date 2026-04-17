@@ -1,4 +1,4 @@
-ragx is a pip-installable Python RAG library with hybrid search on by default.
+ragwise is a pip-installable Python RAG library with hybrid search on by default.
 It requires no Docker, no background server, and no configuration to get started.
 Ingest documents with rag.ingest() and query with rag.query().
 The refund policy allows returns within 30 days of purchase.

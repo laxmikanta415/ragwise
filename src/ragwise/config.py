@@ -1,4 +1,4 @@
-"""Public configuration and response types for the ragx API."""
+"""Public configuration and response types for the ragwise API."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field

@@ -2,7 +2,7 @@
 
 ## Our commitment
 
-ragx is an open, welcoming project. Everyone who participates — through issues, PRs, discussions, or any other channel — is expected to treat others with respect and good faith.
+ragwise is an open, welcoming project. Everyone who participates — through issues, PRs, discussions, or any other channel — is expected to treat others with respect and good faith.
 
 ## Expected behaviour
 
@@ -19,7 +19,7 @@ ragx is an open, welcoming project. Everyone who participates — through issues
 
 ## Reporting
 
-If you experience or witness behaviour that violates this policy, email **lax@insummary.com** with subject `[CoC] ragx`. All reports are handled confidentially. We aim to respond within 72 hours.
+If you experience or witness behaviour that violates this policy, email **lax@insummary.com** with subject `[CoC] ragwise`. All reports are handled confidentially. We aim to respond within 72 hours.
 
 ## Enforcement
 

@@ -1,10 +1,10 @@
-# ragx Guide
+# ragwise Guide
 
-ragx is the easiest way to add production-grade RAG to your Python project.
+ragwise is the easiest way to add production-grade RAG to your Python project.
 
 ## Installation
 
-Install with pip: `pip install ragx`
+Install with pip: `pip install ragwise`
 
 ## Quickstart
 

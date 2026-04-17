@@ -1,4 +1,4 @@
-# ragx Development Tracker
+# ragwise Development Tracker
 
 **Last updated:** 2026-04-16
 **Current sprint:** S6

@@ -32,7 +32,7 @@ CREATE INDEX IF NOT EXISTS {table}_emb_idx ON {table} USING ivfflat (embedding v
 class PgVectorStore(VectorStore):
     """Production vector store backed by PostgreSQL + pgvector + FTS."""
 
-    def __init__(self, dsn: str, table: str = "ragx_docs") -> None:
+    def __init__(self, dsn: str, table: str = "ragwise_docs") -> None:
         self._dsn = dsn
         self._table = table
         self._dim: int | None = None

@@ -1,4 +1,4 @@
-"""ragx — Production-grade RAG in 4 lines. Hybrid search on by default."""
+"""ragwise — Production-grade RAG in 4 lines. Hybrid search on by default."""
 
 from ragwise.agent import as_claude_tool, as_openai_tool
 from ragwise.config import Answer, IngestResult, QueryConfig, RAGConfig

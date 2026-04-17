@@ -63,11 +63,11 @@ dev = [
 ragwise = "cli.main:app"
 
 [project.urls]
-Homepage = "https://github.com/laxmikanta415/ragx"
-Repository = "https://github.com/laxmikanta415/ragx"
-Issues = "https://github.com/laxmikanta415/ragx/issues"
-Documentation = "https://ragx.readthedocs.io"
-Changelog = "https://github.com/laxmikanta415/ragx/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/laxmikanta415/ragwise"
+Repository = "https://github.com/laxmikanta415/ragwise"
+Issues = "https://github.com/laxmikanta415/ragwise/issues"
+Documentation = "https://ragwise.readthedocs.io"
+Changelog = "https://github.com/laxmikanta415/ragwise/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ragwise", "src/cli"]

@@ -10,7 +10,7 @@ from uuid import uuid4
 
 @dataclass(frozen=True, slots=True)
 class Document:
-    """Universal data container flowing through the entire ragx pipeline."""
+    """Universal data container flowing through the entire ragwise pipeline."""
 
     id: str = field(default_factory=lambda: uuid4().hex)
     text: str = ""

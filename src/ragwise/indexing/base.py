@@ -24,6 +24,9 @@ class SearchResult:
     metadata: dict[str, Any] = field(default_factory=dict)
     # populated by dense_search when embeddings are available; empty otherwise
     embedding: list[float] = field(default_factory=list)
+    # individual pre-fusion scores; populated by HybridSearcher
+    bm25_score: float = 0.0
+    dense_score: float = 0.0
 
 
 class VectorStore(ABC):

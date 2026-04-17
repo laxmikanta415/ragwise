@@ -12,7 +12,7 @@ import ragwise.utils
 
 
 def test_version() -> None:
-    assert ragwise.__version__ == "0.1.0"
+    assert ragwise.__version__ == "0.2.0"
 
 
 def test_all_subpackages_importable() -> None:

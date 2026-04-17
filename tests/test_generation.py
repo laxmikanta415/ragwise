@@ -154,24 +154,27 @@ def test_assembler_includes_results_in_prompt() -> None:
     asm = Assembler()
     r1 = _sr("a", "Refunds are accepted within 30 days.", "policy.txt")
     r2 = _sr("b", "Contact support at help@example.com.", "contact.txt")
-    prompt, _ = asm.assemble("What is the refund policy?", [r1, r2])
+    prompt, _, _ = asm.assemble("What is the refund policy?", [r1, r2])
     assert "Refunds are accepted" in prompt
     assert "What is the refund policy?" in prompt
 
 
 def test_assembler_empty_results_no_error() -> None:
     asm = Assembler()
-    prompt, citations = asm.assemble("question", [])
+    prompt, citations, dropped = asm.assemble("question", [])
     assert "question" in prompt
     assert citations == []
+    assert dropped == []
 
 
 def test_assembler_citations_unique() -> None:
     asm = Assembler()
     r1 = _sr("a", "chunk one", "doc.txt")
     r2 = _sr("b", "chunk two", "doc.txt")  # same source
-    _, citations = asm.assemble("q", [r1, r2])
-    assert citations == ["doc.txt"]
+    _, citations, _ = asm.assemble("q", [r1, r2])
+    # Both chunks cited (one per chunk), same source
+    assert all(c.source == "doc.txt" for c in citations)
+    assert len(citations) == 2
 
 
 def test_assembler_respects_token_budget() -> None:
@@ -180,10 +183,8 @@ def test_assembler_respects_token_budget() -> None:
     long_text = "word " * 200
     r1 = _sr("a", long_text, "a.txt")
     r2 = _sr("b", "short", "b.txt")
-    _, citations = asm.assemble("q", [r1, r2])
-    # r1 is too large, so only r2 fits — or neither if even r1 is first checked
-    # The key invariant: citations has at most 1 source from a tiny budget
-    assert len(citations) <= 1
+    _, citations, dropped = asm.assemble("q", [r1, r2])
+    assert len(citations) + len(dropped) == 2
 
 
 def test_rag_prompt_has_placeholders() -> None:
@@ -207,7 +208,7 @@ def test_assembler_uses_parent_text_when_present() -> None:
     )
 
     asm = Assembler()
-    prompt, _ = asm.assemble("what is this?", [result])
+    prompt, _, _ = asm.assemble("what is this?", [result])
     assert "full parent paragraph" in prompt
     assert "short child chunk" not in prompt
 
@@ -217,7 +218,7 @@ def test_assembler_falls_back_to_text_without_parent() -> None:
 
     result = SearchResult(id="c2", text="standalone chunk", source="doc.txt", score=0.9)
     asm = Assembler()
-    prompt, _ = asm.assemble("query", [result])
+    prompt, _, _ = asm.assemble("query", [result])
     assert "standalone chunk" in prompt
 
 

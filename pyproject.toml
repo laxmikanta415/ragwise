@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ragwise"
-version = "0.1.0"
+version = "0.2.0"
 description = "Production-grade RAG in 4 lines — hybrid search, streaming, and agent tools on by default."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -92,7 +92,7 @@ ignore_missing_imports = true
 files = ["src"]
 
 [[tool.mypy.overrides]]
-module = ["redis.*"]
+module = ["redis.*", "cohere.*", "flashrank.*"]
 follow_imports = "skip"
 
 [tool.pytest.ini_options]

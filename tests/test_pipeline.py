@@ -368,8 +368,8 @@ async def test_rag_query_citations_populated(tmp_path: Path) -> None:
         answer = await rag.query("refund?")
 
     assert isinstance(answer.citations, list)
-    # citations should list the source file
-    assert any("doc.txt" in c for c in answer.citations)
+    # citations are Citation objects — check via citation_sources
+    assert any("doc.txt" in s for s in answer.citation_sources)
 
 
 @pytest.mark.asyncio

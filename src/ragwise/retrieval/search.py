@@ -46,6 +46,10 @@ class HybridSearcher:
         for r in dense_results:
             lookup[r.id] = r
 
+        # Preserve individual scores for trace/observability
+        dense_score_map: dict[str, float] = {r.id: r.score for r in dense_results}
+        sparse_score_map: dict[str, float] = {r.id: r.score for r in sparse_results}
+
         dense_ids = [r.id for r in dense_results]
         sparse_ids = [r.id for r in sparse_results]
 
@@ -62,6 +66,9 @@ class HybridSearcher:
                         source=orig.source,
                         score=rrf_score,
                         metadata=orig.metadata,
+                        embedding=orig.embedding,
+                        bm25_score=sparse_score_map.get(doc_id, 0.0),
+                        dense_score=dense_score_map.get(doc_id, 0.0),
                     )
                 )
 

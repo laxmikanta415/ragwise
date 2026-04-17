@@ -8,6 +8,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from ragwise.models import Citation, QueryTrace
+
 
 class RAGConfig(BaseModel):
     """Top-level configuration for a RAG pipeline instance.
@@ -30,6 +32,10 @@ class RAGConfig(BaseModel):
     reranker: str | None = None
     cache: bool | str = True
     batch_size: int = 32
+    confidence_threshold: float = 0.0
+    insufficient_response: str = (
+        "I could not find reliable information in the indexed documents to answer this question."
+    )
 
     @field_validator("chunk_size")
     @classmethod
@@ -110,6 +116,7 @@ class QueryConfig(BaseModel):
     stream: bool = False
     tenant_id: str | None = None
     allowed_sources: list[str] = Field(default_factory=list)
+    citation_mode: str = "passage"  # "passage" | "source"
 
     @field_validator("alpha")
     @classmethod
@@ -138,9 +145,17 @@ class Answer:
     """Immutable response returned by RAG.query()."""
 
     text: str
-    citations: list[str]
+    citations: list[Citation]
     chunks_used: int
     sufficient: bool = True
+    has_sufficient_context: bool = True
+    trace: QueryTrace | None = None
+    top_retrieved: list[Citation] | None = None
+
+    @property
+    def citation_sources(self) -> list[str]:
+        """Convenience shorthand: list of source file paths from citations."""
+        return [c.source for c in self.citations]
 
 
 @dataclass

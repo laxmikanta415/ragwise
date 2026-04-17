@@ -5,7 +5,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from ragwise import Answer, IngestResult, QueryConfig, RAGConfig
+from ragwise import Answer, Citation, IngestResult, QueryConfig, RAGConfig
 
 
 def test_ragconfig_defaults() -> None:
@@ -38,11 +38,14 @@ def test_queryconfig_defaults() -> None:
 
 
 def test_answer_fields() -> None:
-    ans = Answer(text="hello", citations=["a.txt"], chunks_used=3)
+    cit = Citation(text="passage", source="a.txt", chunk_id="c1", final_score=0.9)
+    ans = Answer(text="hello", citations=[cit], chunks_used=3)
     assert ans.text == "hello"
-    assert ans.citations == ["a.txt"]
+    assert ans.citations[0].source == "a.txt"
+    assert ans.citation_sources == ["a.txt"]
     assert ans.chunks_used == 3
     assert ans.sufficient is True
+    assert ans.has_sufficient_context is True
 
 
 def test_answer_is_frozen() -> None:

@@ -55,3 +55,11 @@ class VectorStore(ABC):
     @abstractmethod
     async def list_sources(self) -> list[str]:
         """Return all distinct source paths currently indexed."""
+
+    async def get_adjacent_chunks(self, chunk_id: str, window: int = 2) -> list[SearchResult]:
+        """Return up to window chunks before and after chunk_id (same source).
+
+        Default implementation returns an empty list. Override in stores that
+        persist chunk_index metadata.
+        """
+        return []

@@ -61,10 +61,14 @@ dev = [
   "pytest-cov>=5.0",
   "ruff>=0.4",
   "mypy>=1.10",
+  "types-PyYAML>=6.0",
 ]
 
 [project.scripts]
 ragwise = "cli.main:app"
+
+[project.entry-points."pytest11"]
+ragwise_testing = "ragwise.pytest_plugin"
 
 [project.urls]
 Homepage = "https://github.com/laxmikanta415/ragwise"

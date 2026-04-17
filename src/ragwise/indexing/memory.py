@@ -99,3 +99,32 @@ class InMemoryStore(VectorStore):
                 seen.add(doc.source)
                 result.append(doc.source)
         return result
+
+    async def get_adjacent_chunks(self, chunk_id: str, window: int = 2) -> list[SearchResult]:
+        target = next((d for d in self._docs if d.id == chunk_id), None)
+        if target is None:
+            return []
+
+        chunk_idx = target.metadata.get("chunk_index")
+        if chunk_idx is None:
+            return [SearchResult(id=target.id, text=target.text, source=target.source, score=1.0)]
+
+        source_docs = [
+            (d, int(d.metadata.get("chunk_index", 0)))
+            for d in self._docs
+            if d.source == target.source
+        ]
+        source_docs.sort(key=lambda x: x[1])
+
+        lo, hi = chunk_idx - window, chunk_idx + window
+        return [
+            SearchResult(
+                id=d.id,
+                text=d.text,
+                source=d.source,
+                score=1.0 if d.id == chunk_id else 0.5,
+                metadata=d.metadata,
+            )
+            for d, ci in source_docs
+            if lo <= ci <= hi
+        ]

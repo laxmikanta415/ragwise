@@ -1,6 +1,7 @@
 """ragwise — Production-grade RAG in 4 lines. Hybrid search on by default."""
 
-from ragwise.agent import as_claude_tool, as_openai_tool
+from ragwise.agent import as_claude_tool, as_claude_tool_suite, as_openai_tool, as_openai_tool_suite
+from ragwise.agent_session import AgentSession
 from ragwise.config import Answer, IngestResult, QueryConfig, RAGConfig
 from ragwise.eval.schema import EvalSchema
 from ragwise.indexing.base import SearchResult
@@ -22,4 +23,7 @@ __all__ = [
     "RAG",
     "as_claude_tool",
     "as_openai_tool",
+    "as_claude_tool_suite",
+    "as_openai_tool_suite",
+    "AgentSession",
 ]

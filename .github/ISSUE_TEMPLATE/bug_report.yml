@@ -1,0 +1,70 @@
+name: Bug Report
+description: Something isn't working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for taking the time to report a bug. Please fill in as much detail as possible."
+
+  - type: input
+    id: version
+    attributes:
+      label: ragx version
+      placeholder: "e.g. 0.1.0 — run: pip show ragx"
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "e.g. 3.11.9 — run: python --version"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "e.g. macOS 15, Ubuntu 24.04, Windows 11"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: How did you install ragx?
+      options:
+        - pip install ragx
+        - pip install -e . (editable)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: The smallest snippet of code that reproduces the bug
+      render: python
+      placeholder: |
+        from ragx import RAG
+        async with RAG(llm="openai/gpt-4o-mini") as rag:
+            ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: Include the full traceback if there is one
+    validations:
+      required: true

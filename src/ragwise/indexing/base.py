@@ -1,0 +1,48 @@
+"""VectorStore ABC, EmbeddedDoc, and SearchResult."""
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from typing import Any
+
+
+@dataclass(frozen=True)
+class EmbeddedDoc:
+    id: str
+    text: str
+    source: str
+    embedding: list[float]
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class SearchResult:
+    id: str
+    text: str
+    source: str
+    score: float
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+class VectorStore(ABC):
+    """Abstract base class for all ragx vector stores."""
+
+    @abstractmethod
+    async def upsert(self, docs: list[EmbeddedDoc]) -> None:
+        """Insert or replace documents by id."""
+
+    @abstractmethod
+    async def dense_search(self, query_vec: list[float], top_k: int) -> list[SearchResult]:
+        """Return top-k results by cosine/vector similarity."""
+
+    @abstractmethod
+    async def sparse_search(self, query: str, top_k: int) -> list[SearchResult]:
+        """Return top-k results by keyword/BM25/FTS similarity."""
+
+    @abstractmethod
+    async def delete(self, source: str) -> None:
+        """Remove all documents whose source matches *source*."""
+
+    @abstractmethod
+    async def get_indexed_sources(self) -> dict[str, str]:
+        """Return mapping of source path → content hash for incremental indexing."""

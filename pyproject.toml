@@ -91,6 +91,10 @@ strict = true
 ignore_missing_imports = true
 files = ["src"]
 
+[[tool.mypy.overrides]]
+module = ["redis.*"]
+follow_imports = "skip"
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]

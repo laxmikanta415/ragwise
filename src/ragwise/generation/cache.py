@@ -25,7 +25,7 @@ class LLMCache:
                 import redis.asyncio as aioredis
             except ImportError as e:
                 raise ImportError("pip install redis") from e
-            self._redis = aioredis.from_url(backend)  # type: ignore[no-untyped-call]
+            self._redis = aioredis.from_url(backend)
 
     async def get(self, key: str) -> str | None:
         if not self._backend:

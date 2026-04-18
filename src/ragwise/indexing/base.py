@@ -56,6 +56,15 @@ class VectorStore(ABC):
     async def list_sources(self) -> list[str]:
         """Return all distinct source paths currently indexed."""
 
+    async def list_sources_with_metadata(self) -> list[dict[str, Any]]:
+        """Return list of dicts with at minimum 'source' and all chunk metadata keys.
+
+        Used by StalenessChecker to inspect valid_from/valid_until without loading embeddings.
+        Default implementation returns source + empty metadata; override for richer output.
+        """
+        sources = await self.list_sources()
+        return [{"source": s} for s in sources]
+
     async def get_adjacent_chunks(self, chunk_id: str, window: int = 2) -> list[SearchResult]:
         """Return up to window chunks before and after chunk_id (same source).
 

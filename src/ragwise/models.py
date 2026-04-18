@@ -50,3 +50,10 @@ class QueryTrace:
     completion_tokens: int = 0
     cost_usd: float = 0.0
     cache_hit: bool = False
+    cache_similarity: float | None = None
+    # Temporal filtering (S4-T1)
+    temporal_filter_applied: bool = False
+    as_of_used: str | None = None
+    # Query expansion (S4-T3)
+    expanded_queries: list[str] | None = None
+    expansion_ms: int = 0

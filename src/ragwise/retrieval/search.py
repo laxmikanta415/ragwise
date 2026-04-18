@@ -1,11 +1,47 @@
 """HybridSearcher — dense + sparse retrieval fused via RRF."""
 from __future__ import annotations
 
+from datetime import datetime
 from fnmatch import fnmatch
+from typing import Any
 
 from ragwise.embedding.base import EmbedderProtocol
 from ragwise.indexing.base import SearchResult, VectorStore
 from ragwise.utils.rrf import rrf
+
+
+def _parse_as_of(as_of: str | datetime | None) -> datetime | None:
+    if as_of is None:
+        return None
+    if isinstance(as_of, datetime):
+        return as_of
+    if as_of == "now":
+        return datetime.utcnow()
+    return datetime.fromisoformat(as_of)
+
+
+def _in_temporal_range(metadata: dict[str, Any], as_of_dt: datetime) -> bool:
+    """Return True if the chunk's valid_from/until range includes as_of_dt.
+
+    Chunks without valid_from/until metadata always pass (backward compat).
+    """
+    valid_from = metadata.get("valid_from")
+    valid_until = metadata.get("valid_until")
+    if valid_from is None and valid_until is None:
+        return True
+    if valid_from is not None:
+        try:
+            if as_of_dt < datetime.fromisoformat(str(valid_from)):
+                return False
+        except ValueError:
+            pass
+    if valid_until is not None:
+        try:
+            if as_of_dt > datetime.fromisoformat(str(valid_until)):
+                return False
+        except ValueError:
+            pass
+    return True
 
 
 class HybridSearcher:
@@ -28,6 +64,8 @@ class HybridSearcher:
         alpha: float = 0.5,  # reserved for future weighted fusion — not used in RRF
         tenant_id: str | None = None,
         allowed_sources: list[str] | None = None,
+        as_of: str | datetime | None = None,
+        version: str | None = None,
     ) -> list[SearchResult]:
         # Embed once; reuse for dense search
         vecs = await self._embedder.embed([query])
@@ -77,5 +115,14 @@ class HybridSearcher:
             results = [r for r in results if r.metadata.get("tenant_id") == tenant_id]
         if allowed_sources:
             results = [r for r in results if any(fnmatch(r.source, pat) for pat in allowed_sources)]
+        if as_of is not None:
+            as_of_dt = _parse_as_of(as_of)
+            if as_of_dt is not None:
+                results = [r for r in results if _in_temporal_range(r.metadata, as_of_dt)]
+        if version is not None:
+            results = [
+                r for r in results
+                if r.metadata.get("version") == version or "version" not in r.metadata
+            ]
 
         return results

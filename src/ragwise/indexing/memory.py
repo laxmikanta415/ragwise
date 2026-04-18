@@ -1,6 +1,8 @@
 """InMemoryStore — numpy dense + rank-bm25 sparse. Zero external services."""
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from rank_bm25 import BM25Okapi
 
@@ -90,6 +92,13 @@ class InMemoryStore(VectorStore):
             if doc.source not in seen:
                 seen[doc.source] = doc.metadata.get("content_hash", "")
         return seen
+
+    async def list_sources_with_metadata(self) -> list[dict[str, Any]]:
+        seen: dict[str, dict[str, Any]] = {}
+        for doc in self._docs:
+            if doc.source not in seen:
+                seen[doc.source] = {"source": doc.source, **doc.metadata}
+        return list(seen.values())
 
     async def list_sources(self) -> list[str]:
         seen: set[str] = set()

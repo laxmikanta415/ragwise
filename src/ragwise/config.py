@@ -117,6 +117,14 @@ class QueryConfig(BaseModel):
     tenant_id: str | None = None
     allowed_sources: list[str] = Field(default_factory=list)
     citation_mode: str = "passage"  # "passage" | "source"
+    # Temporal filtering (S4-T1)
+    as_of: str | None = None  # ISO date string, datetime str, or "now"
+    version: str | None = None  # exact-match version filter
+    # Semantic cache (S4-T2)
+    cache_threshold: float = 0.92
+    # Query expansion (S4-T3)
+    n_queries: int = 1
+    query_variants: list[str] | None = None
 
     @field_validator("alpha")
     @classmethod

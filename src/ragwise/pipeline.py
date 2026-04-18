@@ -155,6 +155,7 @@ class RAG:
         self._assembler: Assembler | None = None
         self._sufficiency: SufficiencyChecker = SufficiencyChecker()
         self._tracer: Any = None  # LangfuseTracer | None
+        self._semantic_cache: Any = None  # MemorySemanticCache | None
 
     async def __aenter__(self) -> RAG:
         from ragwise.embedding.base import resolve_embedder
@@ -180,7 +181,15 @@ class RAG:
         # cache: explicit False overrides config's True
         use_cache = cfg.cache if self._cache_kw is _UNSET else self._cache_kw
         if use_cache:
+            from ragwise.generation.semantic_cache import MemorySemanticCache
             backend = use_cache if isinstance(use_cache, str) else "memory"
+            # Semantic cache at query level (replaces SHA-256 prompt cache)
+            if isinstance(backend, str) and backend.startswith("redis"):
+                from ragwise.generation.semantic_cache import RedisSemanticCache
+                self._semantic_cache = RedisSemanticCache(url=backend)
+            else:
+                self._semantic_cache = MemorySemanticCache()
+            # Keep LLM-level cache for streaming paths
             cache_obj = LLMCache(backend=backend)
             self._llm = CachedLLM(llm=base_llm, cache=cache_obj)
         else:
@@ -333,16 +342,44 @@ class RAG:
         query_vec = (await self._embedder.embed([question]))[0]
         trace.query_embedding_ms = int((time.perf_counter() - t0) * 1000)
 
-        # --- Retrieval ---
-        t0 = time.perf_counter()
-        results = await self._searcher.search(
-            question,
-            top_k=qc.top_k,
-            alpha=qc.alpha,
-            tenant_id=qc.tenant_id,
-            allowed_sources=qc.allowed_sources if qc.allowed_sources else None,
-        )
-        trace.retrieval_ms = int((time.perf_counter() - t0) * 1000)
+        # --- Semantic cache lookup (skip for temporal/versioned queries) ---
+        _temporal_active = bool(qc.as_of or qc.version)
+        if self._semantic_cache is not None and not _temporal_active:
+            cached_answer, sim = self._semantic_cache.lookup(query_vec, qc.cache_threshold)
+            if cached_answer is not None:
+                trace.cache_hit = True
+                trace.cache_similarity = sim
+                return Answer(
+                    text=cached_answer.text,
+                    citations=cached_answer.citations,
+                    chunks_used=cached_answer.chunks_used,
+                    sufficient=cached_answer.sufficient,
+                    has_sufficient_context=cached_answer.has_sufficient_context,
+                    trace=trace,
+                )
+
+        # --- Retrieval (with optional expansion) ---
+        if (qc.n_queries > 1 or qc.query_variants) and not _temporal_active:
+            t0 = time.perf_counter()
+            results, expanded = await self._expand_and_search(question, qc, query_vec)
+            trace.expanded_queries = expanded
+            trace.expansion_ms = int((time.perf_counter() - t0) * 1000)
+            trace.retrieval_ms = trace.expansion_ms
+        else:
+            t0 = time.perf_counter()
+            results = await self._searcher.search(
+                question,
+                top_k=qc.top_k,
+                alpha=qc.alpha,
+                tenant_id=qc.tenant_id,
+                allowed_sources=qc.allowed_sources if qc.allowed_sources else None,
+                as_of=qc.as_of,
+                version=qc.version,
+            )
+            trace.retrieval_ms = int((time.perf_counter() - t0) * 1000)
+            if _temporal_active:
+                trace.temporal_filter_applied = True
+                trace.as_of_used = qc.as_of
 
         # --- Reranking ---
         rerank_score_map: dict[str, float] = {}
@@ -435,6 +472,10 @@ class RAG:
             has_sufficient_context=True,
             trace=trace,
         )
+
+        # Store in semantic cache (skip for temporal/versioned queries)
+        if self._semantic_cache is not None and not _temporal_active:
+            self._semantic_cache.store(query_vec, answer)
 
         if self._tracer is not None:
             with contextlib.suppress(Exception):
@@ -552,7 +593,106 @@ class RAG:
             alpha=qc.alpha,
             tenant_id=qc.tenant_id,
             allowed_sources=qc.allowed_sources if qc.allowed_sources else None,
+            as_of=qc.as_of,
+            version=qc.version,
         )
+
+    async def _expand_and_search(
+        self,
+        question: str,
+        qc: QueryConfig,
+        query_vec: list[float],
+    ) -> tuple[list[SearchResult], list[str]]:
+        """Generate query variants and merge results via RRF."""
+        import asyncio
+        import json as _json
+        import logging
+
+        _log = logging.getLogger(__name__)
+
+        if qc.query_variants:
+            variants = list(qc.query_variants)
+        else:
+            prompt = (
+                f"Generate {qc.n_queries} search query variants for the following question. "
+                f"Each variant should rephrase the question to improve document retrieval coverage. "
+                f"Return as a JSON array of strings.\n\nOriginal: {question}"
+            )
+            try:
+                assert self._llm is not None
+                raw = await self._llm.complete(prompt)
+                parsed = _json.loads(raw)
+                variants = [str(v) for v in parsed[: qc.n_queries]]
+            except Exception:
+                _log.warning("[RAG] Query expansion parse failure — falling back to single query")
+                variants = [question]
+
+        assert self._searcher is not None
+        searches = await asyncio.gather(
+            *[
+                self._searcher.search(
+                    v,
+                    top_k=qc.top_k,
+                    alpha=qc.alpha,
+                    tenant_id=qc.tenant_id,
+                    allowed_sources=qc.allowed_sources if qc.allowed_sources else None,
+                )
+                for v in variants
+            ],
+            return_exceptions=True,
+        )
+
+        from ragwise.utils.rrf import rrf
+
+        all_rankings: list[list[str]] = []
+        lookup: dict[str, SearchResult] = {}
+        for res in searches:
+            if isinstance(res, Exception):
+                continue
+            all_rankings.append([r.id for r in res])  # type: ignore[union-attr]
+            for r in res:  # type: ignore[union-attr]
+                lookup[r.id] = r
+
+        fused = rrf(all_rankings)
+        results = [lookup[doc_id] for doc_id, _ in fused[: qc.top_k] if doc_id in lookup]
+        return results, variants
+
+    async def list_stale(
+        self,
+        as_of: str | None = "now",
+        expiring_soon_days: int = 0,
+    ) -> tuple[list[Any], list[Any]]:
+        """Return (expired, expiring_soon) StaleSource lists.
+
+        Sources with no valid_until metadata are never returned.
+        """
+        assert self._store is not None, "RAG must be used as a context manager"
+        from ragwise.lifecycle import StalenessChecker
+        checker = StalenessChecker(self._store)
+        return await checker.list_stale(as_of=as_of, expiring_soon_days=expiring_soon_days)
+
+    async def purge_stale(self, as_of: str | None = "now") -> Any:
+        """Delete all chunks from sources whose valid_until < as_of."""
+        assert self._store is not None, "RAG must be used as a context manager"
+        from ragwise.lifecycle import StalenessChecker
+        checker = StalenessChecker(self._store)
+        return await checker.purge_stale(as_of=as_of)
+
+    async def staleness_report(
+        self,
+        as_of: str | None = "now",
+        expiring_soon_days: int = 30,
+    ) -> str:
+        """Return a human-readable staleness report string."""
+        assert self._store is not None, "RAG must be used as a context manager"
+        from ragwise.lifecycle import StalenessChecker
+        checker = StalenessChecker(self._store)
+        return await checker.staleness_report(as_of=as_of, expiring_soon_days=expiring_soon_days)
+
+    @property
+    def cache(self) -> Any:
+        """Access the semantic cache for stats/clear/invalidate."""
+        return self._semantic_cache
 
     def set_tracer(self, tracer: Any) -> RAG:
         """Set a tracer for production observability (e.g. LangfuseTracer).

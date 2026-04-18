@@ -4,16 +4,53 @@ ragwise exposes its document index as a ready-made tool for Claude and OpenAI ag
 
 ## Overview
 
-Two functions in `ragwise.agent` produce tool definitions in the format each SDK expects:
+ragwise provides two patterns:
 
-| Function | Format | SDK |
-|----------|--------|-----|
-| `as_claude_tool(rag)` | Anthropic tool schema | `anthropic` Python SDK |
-| `as_openai_tool(rag)` | OpenAI function tool | `openai` Python SDK |
+| API | Use when |
+|---|---|
+| `as_claude_tool(rag)` / `as_openai_tool(rag)` | Single-turn, stateless tool call |
+| `as_claude_tool_suite(rag)` + `AgentSession` | Multi-turn, stateful — deduplication + loop detection |
 
-Both wrap `rag.search()`, which returns raw `list[SearchResult]` — no generation, just retrieval.
+## AgentSession (Multi-Turn)
 
-## Claude agent
+`AgentSession` tracks retrieved chunks across calls, deduplicates by `chunk_id`, and warns when the same query is submitted twice (loop detection):
+
+```python
+from ragwise.agent import as_claude_tool_suite, AgentSession
+
+async with RAG(llm="openai/gpt-4o-mini") as rag:
+    await rag.ingest("./docs/")
+
+    # Returns 3 tools: search_documents, get_document_context, check_context_budget
+    tools = as_claude_tool_suite(rag, max_iterations=5)
+
+    response = anthropic.messages.create(
+        model="claude-opus-4-6",
+        tools=tools,
+        messages=[{"role": "user", "content": "Compare policy A to policy B"}],
+    )
+```
+
+The three tools:
+- **`search_documents`** — retrieves top-k chunks for a query
+- **`get_document_context`** — fetches the full parent chunk for a given `chunk_id`
+- **`check_context_budget`** — returns how many tokens of context remain before the session is full
+
+### Multi-Hop Example
+
+```python
+# Agent makes 3 tool calls:
+# 1. search_documents("maternity leave policy")   → retrieves policy A
+# 2. search_documents("paternity leave policy")   → retrieves policy B
+# 3. check_context_budget()                       → confirms budget before answer
+
+# AgentSession deduplicates: if policy A appears in both searches, it's only
+# passed to the LLM once. Loop detection warns if query 2 is too similar to query 1.
+```
+
+## Single-Turn Tools
+
+## Claude Agent (Single-Turn)
 
 ```python
 import asyncio
@@ -75,7 +112,7 @@ async def main():
 asyncio.run(main())
 ```
 
-## OpenAI agent
+## OpenAI Agent (Single-Turn)
 
 ```python
 import asyncio
